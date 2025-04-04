@@ -45,7 +45,7 @@ fun Game(words: String, modifier: Modifier = Modifier) {
     var texto by remember { mutableStateOf("") }
     val contexto = LocalContext.current
     Image(
-        painter = painterResource(id = R.drawable.ic_launcher_background),
+        painter = painterResource(id = R.drawable.hanged_0),
         contentDescription = "Descripción de la imagen"
     )
     Text(
