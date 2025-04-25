@@ -1,12 +1,13 @@
 package com.ud.hangedgame
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -16,21 +17,48 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ud.hangedgame.repositories.WordRepository
 import com.ud.hangedgame.ui.theme.HangedGameTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            HangedGameTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HangmanGame(secretWord = "components", modifier = Modifier.padding(innerPadding))
+            HangmanGameScreen(context = this)
+        }
+    }
+}
+
+
+@Composable
+fun HangmanGameScreen(context: Context, level: String = "B1") {
+    var secretWord by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        val repository = WordRepository(context)
+        val word = repository.getRandomWordByLevel(level)
+        secretWord = word?.word?.lowercase() ?: "default"
+    }
+
+    HangedGameTheme {
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                if (secretWord != null) {
+                    HangmanGame(secretWord = secretWord!!)
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
             }
         }
     }
 }
+
+
 
 @Composable
 fun HangmanGame(secretWord: String, modifier: Modifier = Modifier) {
