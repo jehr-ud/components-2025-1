@@ -5,6 +5,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ud.hangedgame.models.Word
 import java.io.IOException
+import com.google.firebase.database.*
+
 
 class WordRepository(private val context: Context) {
 
@@ -15,14 +17,24 @@ class WordRepository(private val context: Context) {
     }
 
     private fun loadWordsFromJson(): List<Word>? {
-        return try {
-            val inputStream = context.assets.open("words.json")
-            val json = inputStream.bufferedReader().use { it.readText() }
-            val listType = object : TypeToken<List<Word>>() {}.type
-            Gson().fromJson<List<Word>>(json, listType)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            null
-        }
+        val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+        val wordDatabase: DatabaseReference = database.getReference("words")
+        val keywordList = mutableListOf<Word>()
+        wordDatabase.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (childSnapshot in snapshot.children) {
+                    val word = childSnapshot.getValue(Word::class.java)
+                    word?.let {
+                        keywordList.add(it)
+                    }
+                }
+                println("Palabras obtenidas: $keywordList")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                println("Error al leer los datos: ${error.message}")
+            }
+        })
+        return keywordList
     }
 }
