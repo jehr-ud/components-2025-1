@@ -32,6 +32,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HangmanGameScreen(context: Context, level: String = "B1") {
+
+
     var secretWord by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {

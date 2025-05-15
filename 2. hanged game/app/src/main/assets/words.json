@@ -1,4 +1,5 @@
-[
+{
+  "words": [
     {
         "word": "a",
         "sound": {
@@ -79376,3 +79377,4 @@
         "description_es": "No definition found."
     }
 ]
+}
