@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ud.hangedgame.ui.theme.HangedGameTheme
 
+
 class LevelActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,8 +90,7 @@ fun LevelItem(level: Int) {
         ) {
             Button(onClick = {
                 if (level == 1) {
-                    // Inicia el Juego Activity al hacer clic en el nivel 1
-                    context.startActivity(Intent(context, MainActivity::class.java))
+                    context.startActivity(Intent(context, GameActivity::class.java))
                 }
             }) {
                 Text(text = "Iniciar Juego")

@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.ud.hangedgame.repositories.WordRepository
 import com.ud.hangedgame.ui.theme.HangedGameTheme
 
-class MainActivity : ComponentActivity() {
+class GameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

@@ -1,65 +1,109 @@
 package com.ud.hangedgame
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ud.hangedgame.ui.theme.HangedGameTheme
-
-
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 
 class LoginActivity : ComponentActivity() {
+    private lateinit var auth: FirebaseAuth
+    private val PREFS_NAME = "VocaUDPrefs"
+    private val KEY_USER_ID = "userId"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        auth = Firebase.auth
 
-        setContent{
-            Column(modifier = Modifier
-                .padding(top = 40.dp)
-                .fillMaxSize(),
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            startActivity(Intent(this@LoginActivity, LevelActivity::class.java))
+            finish()
+            return
+        }
+
+        setContent {
+            var email by remember { mutableStateOf("") }
+            var password by remember { mutableStateOf("") }
+
+            Column(
+                modifier = Modifier
+                    .padding(top = 40.dp)
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
-            ){
-                Text("Bienvenido",
-                    fontSize = 32.sp
-                    )
+            ) {
+                Text("Bienvenido", fontSize = 32.sp)
 
-                val correo = remember { mutableStateOf("") }
-                val password = remember { mutableStateOf("") }
                 TextField(
-                    value = correo.value,
-                    onValueChange = { correo.value = it },
-                    label = { Text("Correo") }
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Correo") },
+                    modifier = Modifier.fillMaxWidth(0.8f)
                 )
 
                 TextField(
-                    value = password.value,
-                    onValueChange = { password.value = it },
-                    label = { Text("Contraseña") }
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Contraseña") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(0.8f)
                 )
 
-                Button(onClick = {
-                    startActivity(Intent(this@LoginActivity, LevelActivity::class.java))
-                }) {
+                Button(
+                    onClick = {
+                        if (email.isNotEmpty() && password.isNotEmpty()) {
+                            auth.signInWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(this@LoginActivity) { task ->
+                                    if (task.isSuccessful) {
+                                        Log.d("vocaud-login", "createUserWithEmail:success")
+                                        val user = auth.currentUser
+                                        val uid = user?.uid
+                                        if (uid != null) {
+                                            saveUserInSharedPreferences(uid)
+                                        }
+                                        startActivity(Intent(this@LoginActivity, LevelActivity::class.java))
+                                        finish()
+                                    } else {
+                                        Log.w("vocaud-login", "createUserWithEmail:failure", task.exception)
+                                        Toast.makeText(
+                                            baseContext,
+                                            "Error de autenticación: ${task.exception?.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                        } else {
+                            Toast.makeText(this@LoginActivity, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ) {
                     Text("Login")
                 }
-
             }
         }
+    }
+
+    private fun saveUserInSharedPreferences(uid: String) {
+        val sharedPreferences: SharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+        editor.putString(KEY_USER_ID, uid)
+        editor.apply()
     }
 }
