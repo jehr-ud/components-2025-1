@@ -8,33 +8,21 @@ import java.io.IOException
 import com.google.firebase.database.*
 
 
-class WordRepository(private val context: Context) {
-
-    fun getRandomWordByLevel(level: String): Word? {
-        val words = loadWordsFromJson() ?: return null
-        val filtered = words.filter { it.level.equals(level, ignoreCase = true) }
-        return filtered.randomOrNull()
-    }
-
-    private fun loadWordsFromJson(): List<Word>? {
-        val database: FirebaseDatabase = FirebaseDatabase.getInstance()
-        val wordDatabase: DatabaseReference = database.getReference("words")
-        val keywordList = mutableListOf<Word>()
-        wordDatabase.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (childSnapshot in snapshot.children) {
-                    val word = childSnapshot.getValue(Word::class.java)
-                    word?.let {
-                        keywordList.add(it)
-                    }
-                }
-                println("Palabras obtenidas: $keywordList")
+class WordRepository {
+    val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    val wordDatabase: DatabaseReference = database.getReference("words")
+    suspend fun getRandomWordByLevel(level: String): Word? {
+        return try {
+            val snapshot = wordReference.child(level.uppercase()).get().await()
+            val wordList = mutableListOf<Word>()
+            for (childSnapshot in snapshot.children) {
+                val word = childSnapshot.getValue(Word::class.java)
+                word?.let { wordList.add(it) }
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                println("Error al leer los datos: ${error.message}")
-            }
-        })
-        return keywordList
+            wordList.randomOrNull()
+        } catch (e: Exception) {
+            println("Error obteniendo palabras para el nivel $level: ${e.message}")
+            null
+        }
     }
 }

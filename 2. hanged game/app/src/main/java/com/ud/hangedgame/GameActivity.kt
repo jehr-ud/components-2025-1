@@ -34,10 +34,10 @@ class MainActivity : ComponentActivity() {
 fun HangmanGameScreen(context: Context, level: String = "B1") {
 
 
-    var secretWord by remember { mutableStateOf<String?>(null) }
+    var secretWord by remember { mutableStateOf("default") }
 
     LaunchedEffect(Unit) {
-        val repository = WordRepository(context)
+        val repository = WordRepository()
         val word = repository.getRandomWordByLevel(level)
         secretWord = word?.word?.lowercase() ?: "default"
     }
