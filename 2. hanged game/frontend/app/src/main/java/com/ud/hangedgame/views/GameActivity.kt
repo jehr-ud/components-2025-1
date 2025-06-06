@@ -1,6 +1,6 @@
 package com.ud.hangedgame.views
 
-import android.content.Context
+import androidx.lifecycle.viewmodel.compose.viewModel
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -20,6 +20,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ud.hangedgame.R
 import com.ud.hangedgame.repositories.WordRepository
+import com.ud.hangedgame.viewmodel.GameViewModel
+import com.ud.hangedgame.viewmodel.GameViewModelFactory
 import com.ud.hangedgame.views.ui.theme.HangedGameTheme
 
 
@@ -29,10 +31,7 @@ class GameActivity : ComponentActivity() {
 
         val intent = getIntent()
 
-        var level: String? = null
-        if (intent != null && intent.hasExtra("level")) {
-            level = intent.getStringExtra("level").toString()
-        }
+        val level: String = intent.getStringExtra("level") ?: "B1"
 
         Toast.makeText(
             this,
@@ -41,52 +40,71 @@ class GameActivity : ComponentActivity() {
         ).show()
 
         setContent {
-            HangmanGameScreen(context = this, level= level.toString())
+
+            val gameViewModel: GameViewModel = viewModel(
+                factory = GameViewModelFactory(WordRepository())
+            )
+
+            LaunchedEffect(level) {
+                gameViewModel.loadNewWord(level)
+            }
+
+            HangmanGameScreen(gameViewModel = gameViewModel)
         }
     }
 }
 
-
 @Composable
-fun HangmanGameScreen(context: Context, level: String = "B1") {
+fun HangmanGameScreen(
+    gameViewModel: GameViewModel = viewModel()
+) {
+    val secretWord by gameViewModel.secretWord.collectAsState()
+    val guessedLetters by gameViewModel.guessedLetters.collectAsState()
+    val errors by gameViewModel.errors.collectAsState()
+    val hasWon by gameViewModel.hasWon.collectAsState()
+    val hasLost by gameViewModel.hasLost.collectAsState()
+    val isLoading by gameViewModel.isLoading.collectAsState()
 
-
-    var secretWord by remember { mutableStateOf("default") }
-
-    LaunchedEffect(Unit) {
-        val repository = WordRepository()
-        val word = repository.getRandomWordByLevel(level)
-        secretWord = word?.word?.lowercase() ?: "default"
-    }
-
-    HangedGameTheme {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
-                if (secretWord != null) {
-                    HangmanGame(secretWord = secretWord!!)
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (secretWord != null) {
+                HangmanGame(
+                    secretWord = secretWord!!,
+                    guessedLetters = guessedLetters,
+                    errors = errors,
+                    hasWon = hasWon,
+                    hasLost = hasLost,
+                    onLetterSelected = { letter -> gameViewModel.guessLetter(letter) }
+                )
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No se pudo cargar la palabra. Inténtalo de nuevo.")
                 }
             }
         }
     }
 }
 
-
-
 @Composable
-fun HangmanGame(secretWord: String, modifier: Modifier = Modifier) {
-    var guessedLetters by remember { mutableStateOf(setOf<Char>()) }
-    var errors by remember { mutableIntStateOf(0) }
-
-    val hasWon = secretWord.all { guessedLetters.contains(it) }
-    val hasLost = errors >= 5
-
+fun HangmanGame(
+    secretWord: String,
+    guessedLetters: Set<Char>,
+    errors: Int,
+    hasWon: Boolean,
+    hasLost: Boolean,
+    onLetterSelected: (Char) -> Unit,
+    modifier: Modifier = Modifier
+)  {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -111,18 +129,11 @@ fun HangmanGame(secretWord: String, modifier: Modifier = Modifier) {
             }
         }
 
+
         Keyboard(
-            onLetterSelected = { letter ->
-                val lowerLetter = letter.lowercaseChar()
-                if (!guessedLetters.contains(lowerLetter)) {
-                    if (secretWord.contains(lowerLetter, ignoreCase = true)) {
-                        guessedLetters = guessedLetters + lowerLetter
-                    } else {
-                        errors++
-                    }
-                }
-            },
-            disabledLetters = guessedLetters
+            onLetterSelected = onLetterSelected,
+            disabledLetters = guessedLetters,
+            enabled = !hasWon && !hasLost
         )
 
         when {
@@ -147,7 +158,8 @@ fun getImageForError(errors: Int): Int {
 @Composable
 fun Keyboard(
     onLetterSelected: (Char) -> Unit,
-    disabledLetters: Set<Char>
+    disabledLetters: Set<Char>,
+    enabled: Boolean
 ) {
     val letters = ('A'..'Z').toList()
     val rows = letters.chunked(5)
@@ -163,7 +175,7 @@ fun Keyboard(
                 rowLetters.forEach { letter ->
                     Button(
                         onClick = { onLetterSelected(letter) },
-                        enabled = !disabledLetters.contains(letter.lowercaseChar()),
+                        enabled = enabled && !disabledLetters.contains(letter.lowercaseChar()), // Aplicar 'enabled'
                         modifier = Modifier.padding(3.dp)
                     ) {
                         Text(
@@ -181,6 +193,14 @@ fun Keyboard(
 @Composable
 fun PreviewHangmanGame() {
     HangedGameTheme {
-        HangmanGame(secretWord = "components")
+        HangmanGame(
+            secretWord = "components",
+            guessedLetters = setOf('c', 'o', 'm', 'p', 's'),
+            errors = 2,
+            hasWon = false,
+            hasLost = false,
+            onLetterSelected = {},
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }

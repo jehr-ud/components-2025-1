@@ -8,18 +8,19 @@ import kotlinx.coroutines.tasks.await
 class WordRepository {
     val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     val wordReference: DatabaseReference = database.getReference("words")
-    suspend fun getRandomWordByLevel(level: String): Word? {
-        return try {
-            val snapshot = wordReference.child(level.uppercase()).get().await()
+
+    fun getRandomWordByLevel(level: String, callback: (Word?, Exception?) -> Unit) {
+        wordReference.child(level.uppercase()).get().addOnSuccessListener { snapshot ->
             val wordList = mutableListOf<Word>()
             for (childSnapshot in snapshot.children) {
                 val word = childSnapshot.getValue(Word::class.java)
                 word?.let { wordList.add(it) }
             }
-            wordList.randomOrNull()
-        } catch (e: Exception) {
-            println("Error obteniendo palabras para el nivel $level: ${e.message}")
-            null
+            val randomWord = wordList.randomOrNull()
+            callback(randomWord, null)
+        }.addOnFailureListener { exception ->
+            println("Error obteniendo palabras para el nivel $level: ${exception.message}")
+            callback(null, exception)
         }
     }
 }
