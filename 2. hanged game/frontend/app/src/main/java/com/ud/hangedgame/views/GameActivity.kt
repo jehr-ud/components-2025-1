@@ -29,9 +29,9 @@ class GameActivity : ComponentActivity() {
 
         val intent = getIntent()
 
-        var level = 1
+        var level: String? = null
         if (intent != null && intent.hasExtra("level")) {
-            level = intent.getIntExtra("level", 1)
+            level = intent.getStringExtra("level").toString()
         }
 
         Toast.makeText(
@@ -41,7 +41,7 @@ class GameActivity : ComponentActivity() {
         ).show()
 
         setContent {
-            HangmanGameScreen(context = this)
+            HangmanGameScreen(context = this, level= level.toString())
         }
     }
 }

@@ -20,13 +20,14 @@ import com.ud.hangedgame.views.ui.theme.HangedGameTheme
 
 
 class LevelActivity : ComponentActivity() {
+    val levels = listOf("A1", "B1", "B2")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             HangedGameTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LevelSelection(modifier = Modifier.padding(innerPadding))
+                    LevelSelection(this.levels, modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -34,7 +35,7 @@ class LevelActivity : ComponentActivity() {
 }
 
 @Composable
-fun LevelSelection(modifier: Modifier = Modifier) {
+fun LevelSelection(levels: List<String>, modifier: Modifier = Modifier) {
     
     Column(
         modifier = modifier
@@ -43,14 +44,14 @@ fun LevelSelection(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        for (level in 1..3) {
+        for (level in levels) {
             LevelItem(level = level)
         }
     }
 }
 
 @Composable
-fun LevelItem(level: Int) {
+fun LevelItem(level: String) {
     val context = LocalContext.current
 
     Row(
@@ -101,6 +102,6 @@ fun LevelItem(level: Int) {
 @Composable
 fun PreviewLevelSelection() {
     HangedGameTheme {
-        LevelSelection()
+        LevelSelection(listOf("A1", "B1", "B2"))
     }
 }
