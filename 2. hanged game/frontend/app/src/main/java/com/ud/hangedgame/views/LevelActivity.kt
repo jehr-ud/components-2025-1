@@ -1,9 +1,7 @@
-package com.ud.hangedgame
+package com.ud.hangedgame.views
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,7 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ud.hangedgame.ui.theme.HangedGameTheme
+import com.ud.hangedgame.views.ui.theme.HangedGameTheme
 
 
 class LevelActivity : ComponentActivity() {

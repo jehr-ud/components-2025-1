@@ -1,6 +1,5 @@
-package com.ud.hangedgame.ui.theme
+package com.ud.hangedgame.views.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

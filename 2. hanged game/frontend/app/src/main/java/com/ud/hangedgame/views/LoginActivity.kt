@@ -1,6 +1,5 @@
-package com.ud.hangedgame
+package com.ud.hangedgame.views
 
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -101,7 +100,7 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun saveUserInSharedPreferences(uid: String) {
-        val sharedPreferences: SharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val sharedPreferences: SharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val editor: SharedPreferences.Editor = sharedPreferences.edit()
         editor.putString(KEY_USER_ID, uid)
         editor.apply()

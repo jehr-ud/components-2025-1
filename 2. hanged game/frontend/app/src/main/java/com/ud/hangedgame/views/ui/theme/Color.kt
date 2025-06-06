@@ -1,4 +1,4 @@
-package com.ud.hangedgame.ui.theme
+package com.ud.hangedgame.views.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

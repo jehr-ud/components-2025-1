@@ -1,4 +1,4 @@
-package com.ud.hangedgame
+package com.ud.hangedgame.views
 
 import android.content.Context
 import android.os.Bundle
@@ -17,8 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ud.hangedgame.R
 import com.ud.hangedgame.repositories.WordRepository
-import com.ud.hangedgame.ui.theme.HangedGameTheme
+import com.ud.hangedgame.views.ui.theme.HangedGameTheme
 
 class GameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
