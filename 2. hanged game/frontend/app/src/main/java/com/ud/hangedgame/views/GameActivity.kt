@@ -2,6 +2,7 @@ package com.ud.hangedgame.views
 
 import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -21,9 +22,24 @@ import com.ud.hangedgame.R
 import com.ud.hangedgame.repositories.WordRepository
 import com.ud.hangedgame.views.ui.theme.HangedGameTheme
 
+
 class GameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val intent = getIntent()
+
+        var level = 1
+        if (intent != null && intent.hasExtra("level")) {
+            level = intent.getIntExtra("level", 1)
+        }
+
+        Toast.makeText(
+            this,
+            "Start game for level $level",
+            Toast.LENGTH_LONG
+        ).show()
+
         setContent {
             HangmanGameScreen(context = this)
         }

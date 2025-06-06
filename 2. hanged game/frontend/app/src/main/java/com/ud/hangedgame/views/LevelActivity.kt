@@ -87,9 +87,9 @@ fun LevelItem(level: Int) {
             contentAlignment = Alignment.Center
         ) {
             Button(onClick = {
-                if (level == 1) {
-                    context.startActivity(Intent(context, GameActivity::class.java))
-                }
+                val intent = Intent(context, GameActivity::class.java)
+                intent.putExtra("level", level)
+                context.startActivity(intent)
             }) {
                 Text(text = "Iniciar Juego")
             }
