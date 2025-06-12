@@ -10,10 +10,7 @@ const levelSchema = mongoose.Schema(
     minScore: {
       type: Number,
       required: true,
-    },
-    maxScore: {
-      type: Number,
-    },
+    }
   },
   {
     timestamps: true,

@@ -2,14 +2,9 @@
 const express = require('express');
 const router = express.Router();
 const {
-  getLevels,
-  getUserLevel,
-  updateScoreAndLevel,
+  getUserLevel
 } = require('../controllers/levelController');
 
-router.get('/', getLevels);
-
-router.get('/:userId/level', getUserLevel);
-router.put('/:userId/score', updateScoreAndLevel);
+router.get('/user', getUserLevel);
 
 module.exports = router;
