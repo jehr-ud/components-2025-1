@@ -1,0 +1,79 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+.report/
+
+# Node.js
+node_modules/
+dist/
+build/
+.next/ # For Next.js projects
+.nuxt/ # For Nuxt.js projects
+out/ # Common build output directory
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Directory for compiled output
+/public
+
+# Optional npm cache directory
+.npm/
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Temporary files
+.tmp/
+
+# dotenv environment variables file
+.env
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Mac specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux specific files
+.fuse_hidden*
+
+# Windows specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.un~
+*.bak
+
+# Testing
+/coverage
+/.nyc_output
+
+# pnpm-store is a directory used by pnpm for its content-addressable store.
+# It should usually be outside the project directory, but if it's inside, exclude it.
+.pnpm-store/
+
+# Turbo (Turborepo) artifacts
+.turbo/
