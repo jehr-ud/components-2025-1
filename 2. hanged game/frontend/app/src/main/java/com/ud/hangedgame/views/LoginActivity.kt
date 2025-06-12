@@ -32,7 +32,7 @@ class LoginActivity : ComponentActivity() {
 
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            startActivity(Intent(this@LoginActivity, LevelActivity::class.java))
+            startActivity(Intent(this@LoginActivity, RoomActivity::class.java))
             finish()
             return
         }
