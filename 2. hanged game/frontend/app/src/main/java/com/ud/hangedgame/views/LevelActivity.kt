@@ -17,7 +17,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ud.hangedgame.views.ui.theme.HangedGameTheme
-
+import androidx.lifecycle.viewmodel.compose.viewModel // Importar viewModel
+import com.ud.hangedgame.repositories.ScoreRepository // Importar ScoreRepository
+import com.ud.hangedgame.viewmodel.LevelViewModel // Importar LevelViewModel
+import com.ud.hangedgame.viewmodel.LevelViewModelFactory // Importar LevelViewModelFactory
+import androidx.compose.runtime.collectAsState // Importar collectAsState
+import androidx.compose.runtime.getValue // Importar getValue
 
 class LevelActivity : ComponentActivity() {
     val levels = listOf("A1", "B1", "B2")
@@ -26,8 +31,18 @@ class LevelActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             HangedGameTheme {
+                // Instancia el LevelViewModel
+                val scoreRepository = ScoreRepository()
+                val levelViewModel: LevelViewModel = viewModel(
+                    factory = LevelViewModelFactory(scoreRepository, applicationContext)
+                )
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LevelSelection(this.levels, modifier = Modifier.padding(innerPadding))
+                    LevelSelection(
+                        levels = this.levels,
+                        totalScore = levelViewModel.totalScore.collectAsState().value, // Pasa el score
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }
@@ -35,8 +50,7 @@ class LevelActivity : ComponentActivity() {
 }
 
 @Composable
-fun LevelSelection(levels: List<String>, modifier: Modifier = Modifier) {
-    
+fun LevelSelection(levels: List<String>, totalScore: Int, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -44,6 +58,14 @@ fun LevelSelection(levels: List<String>, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Muestra el score total del usuario
+        Text(
+            text = "Tu Puntaje Total: $totalScore",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        //  // Consider adding an image for visual example here
+
         for (level in levels) {
             LevelItem(level = level)
         }
@@ -102,6 +124,9 @@ fun LevelItem(level: String) {
 @Composable
 fun PreviewLevelSelection() {
     HangedGameTheme {
-        LevelSelection(listOf("A1", "B1", "B2"))
+        LevelSelection(
+            levels = listOf("A1", "B1", "B2"),
+            totalScore = 150 // Valor de ejemplo para el score total
+        )
     }
 }
