@@ -3,18 +3,16 @@ package com.ud.hangedgame.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.ud.hangedgame.repositories.WordRepository
 import com.ud.hangedgame.repositories.ScoreRepository
 
-class GameViewModelFactory(
-    private val wordRepository: WordRepository,
+class LevelViewModelFactory(
     private val scoreRepository: ScoreRepository,
     private val context: Context
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(GameViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(LevelViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return GameViewModel(wordRepository, scoreRepository, context) as T
+            return LevelViewModel(scoreRepository, context) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
