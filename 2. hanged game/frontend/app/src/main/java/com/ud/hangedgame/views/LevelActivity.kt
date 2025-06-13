@@ -2,6 +2,7 @@ package com.ud.hangedgame.views
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,31 +18,46 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ud.hangedgame.views.ui.theme.HangedGameTheme
-import androidx.lifecycle.viewmodel.compose.viewModel // Importar viewModel
-import com.ud.hangedgame.repositories.ScoreRepository // Importar ScoreRepository
-import com.ud.hangedgame.viewmodel.LevelViewModel // Importar LevelViewModel
-import com.ud.hangedgame.viewmodel.LevelViewModelFactory // Importar LevelViewModelFactory
-import androidx.compose.runtime.collectAsState // Importar collectAsState
-import androidx.compose.runtime.getValue // Importar getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ud.hangedgame.models.Level
+import com.ud.hangedgame.viewmodel.LevelViewModel
+import com.ud.hangedgame.viewmodel.LevelViewModelFactory
+import com.ud.hangedgame.repositories.LevelRepository
+import com.ud.hangedgame.providers.network.AppModule
+import com.ud.hangedgame.repositories.ScoreRepository
 
 class LevelActivity : ComponentActivity() {
-    val levels = listOf("A1", "B1", "B2")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             HangedGameTheme {
-                // Instancia el LevelViewModel
+                // Initialize the repository and factory
+                val levelRepository = LevelRepository(AppModule.levelApiService)
                 val scoreRepository = ScoreRepository()
-                val levelViewModel: LevelViewModel = viewModel(
-                    factory = LevelViewModelFactory(scoreRepository, applicationContext)
-                )
+                val factory = LevelViewModelFactory(scoreRepository, levelRepository, this)
+
+                // Get the ViewModel
+                val levelViewModel: LevelViewModel = viewModel(factory = factory)
+
+                // Observe LiveData from the ViewModel
+                val levels = levelViewModel.levels.observeAsState(initial = emptyList()).value
+                val totalScore = levelViewModel.totalScore.collectAsStateWithLifecycle().value
+                val errorMessage = levelViewModel.errorMessage.observeAsState().value
+                val isLoading = levelViewModel.isLoading.observeAsState(initial = false).value
+
+                // Display error messages
+                errorMessage?.let { message ->
+                    Toast.makeText(LocalContext.current, message, Toast.LENGTH_LONG).show()
+                }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     LevelSelection(
-                        levels = this.levels,
-                        totalScore = levelViewModel.totalScore.collectAsState().value, // Pasa el score
+                        levels = levels, // Pass the fetched levels
+                        totalScore = totalScore, // Pass the total score
+                        isLoading = isLoading, // Pass loading state
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -50,7 +67,7 @@ class LevelActivity : ComponentActivity() {
 }
 
 @Composable
-fun LevelSelection(levels: List<String>, totalScore: Int, modifier: Modifier = Modifier) {
+fun LevelSelection(levels: List<Level>, totalScore: Int, isLoading: Boolean, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -58,22 +75,27 @@ fun LevelSelection(levels: List<String>, totalScore: Int, modifier: Modifier = M
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Muestra el score total del usuario
         Text(
             text = "Tu Puntaje Total: $totalScore",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        //  // Consider adding an image for visual example here
 
-        for (level in levels) {
-            LevelItem(level = level)
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.size(48.dp))
+            Text(text = "Cargando niveles...", style = MaterialTheme.typography.bodyLarge)
+        } else if (levels.isEmpty()) {
+            Text(text = "No hay niveles disponibles.", style = MaterialTheme.typography.bodyLarge)
+        } else {
+            for (level in levels) {
+                LevelItem(level = level)
+            }
         }
     }
 }
 
 @Composable
-fun LevelItem(level: String) {
+fun LevelItem(level: Level) { // Use the actual Level data class
     val context = LocalContext.current
 
     Row(
@@ -84,7 +106,6 @@ fun LevelItem(level: String) {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Primer cuadrado: nombre del nivel y barra de progreso
         Box(
             modifier = Modifier
                 .weight(0.7f)
@@ -96,12 +117,12 @@ fun LevelItem(level: String) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(text = "Nivel $level", fontSize = 20.sp)
-                LinearProgressIndicator(progress = 1f)
+                Text(text = "Nivel ${level.name}", fontSize = 20.sp) // Use level.name
+                // You'll need actual progress values from your API or game state for this
+                LinearProgressIndicator(progress = 0.5f) // Placeholder progress
             }
         }
 
-        // Segundo cuadrado: botón de inicio
         Box(
             modifier = Modifier
                 .weight(0.3f)
@@ -110,9 +131,12 @@ fun LevelItem(level: String) {
             contentAlignment = Alignment.Center
         ) {
             Button(onClick = {
-                val intent = Intent(context, GameActivity::class.java)
-                intent.putExtra("level", level)
-                context.startActivity(intent)
+                if (level.isUsable){
+                    val intent = Intent(context, GameActivity::class.java)
+                    intent.putExtra("levelId", level.id)
+                    intent.putExtra("levelName", level.name)
+                    context.startActivity(intent)
+                }
             }) {
                 Text(text = "Iniciar Juego")
             }
@@ -125,8 +149,12 @@ fun LevelItem(level: String) {
 fun PreviewLevelSelection() {
     HangedGameTheme {
         LevelSelection(
-            levels = listOf("A1", "B1", "B2"),
-            totalScore = 150 // Valor de ejemplo para el score total
+            levels = listOf(
+                Level(id = "1", name = "A1", isUsable = true),
+                Level(id = "2", name = "B1", isUsable = true)
+            ),
+            totalScore = 190,
+            isLoading = false
         )
     }
 }

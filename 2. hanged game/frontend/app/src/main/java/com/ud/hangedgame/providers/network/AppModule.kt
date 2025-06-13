@@ -23,8 +23,4 @@ object AppModule {
     val levelRepository: LevelRepository by lazy {
         LevelRepository(levelApiService)
     }
-
-    fun provideLevelViewModelFactory(): LevelViewModelFactory {
-        return LevelViewModelFactory(levelRepository)
-    }
 }

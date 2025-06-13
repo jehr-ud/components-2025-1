@@ -1,4 +1,4 @@
-package com.ud.hangedgame.providers.api
+package com.ud.hangedgame.providers.network
 
 import com.ud.hangedgame.models.LevelsResponse
 import retrofit2.Response
