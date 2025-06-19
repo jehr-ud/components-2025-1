@@ -132,7 +132,7 @@ fun LevelItem(level: Level) { // Use the actual Level data class
         ) {
             Button(onClick = {
                 if (level.isUsable){
-                    val intent = Intent(context, GameActivity::class.java)
+                    val intent = Intent(context, RoomActivity::class.java)
                     intent.putExtra("levelId", level.id)
                     intent.putExtra("levelName", level.name)
                     context.startActivity(intent)
